@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 import os
 from jose import jwt,JWTError
-from app.core.responce import ApiResponse
+from app.core.responce import ApiResponse,ApiError
 
 load_dotenv()
 
@@ -31,9 +31,9 @@ def verifyJWT(token : str):
         user_identity: str = payload.get("sub")
 
         if user_identity is None:
-            raise ApiResponse.error(message="Unothorized access",status_code=401) 
+            raise ApiError(message="Unothorized access",status_code=401) 
 
         return user_identity  # valid token ✅
 
     except JWTError:
-        raise ApiResponse.error(message="Unothorized access",status_code=401,errors=JWTError) 
+        raise ApiError(message="Unothorized access",status_code=401,errors=JWTError) 

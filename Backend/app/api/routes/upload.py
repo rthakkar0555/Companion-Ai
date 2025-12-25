@@ -3,6 +3,7 @@ from app.utils.oauth2 import get_current_user
 from app.core.responce import ApiResponse
 from app.database.mongoDb import get_manual_collection
 from cloudinary.uploader import upload
+from app.core.responce import ApiError
 from app.utils.cloudinary_config import cloudinary
 from app.utils.qr import generate_qr_code,upload_qr_to_cloudinary
 router = APIRouter(tags=["Upload manual"])
@@ -16,7 +17,7 @@ async def uploadfile(company_name: str = Form(...),
     collection = get_manual_collection()
 
     if collection is None:
-        raise ApiResponse.error(message="Manual Collection not found",status_code=500,errors="Internal servererror")
+        raise ApiError(message="Manual Collection not found",status_code=500,errors="Internal servererror")
     
     print(file.file)
     result = upload(file.file , folder=f"manual/{company_name}",resource_type="auto")
@@ -24,7 +25,7 @@ async def uploadfile(company_name: str = Form(...),
     print(result)
 
     if result is None:
-        raise ApiResponse.error(message="Unable to upload in claudinary",status_code=500,errors="Claudinary error")
+        raise ApiError(message="Unable to upload in claudinary",status_code=500,errors="Claudinary error")
     image_stream=generate_qr_code(company_name=company_name,product_name=product_name)
     qr=upload_qr_to_cloudinary(qr_buffer=image_stream,public_id=f"{company_name}_{product_name}")
     
@@ -41,6 +42,6 @@ async def uploadfile(company_name: str = Form(...),
     responce=collection.insert_one(file_object)
 
     if responce is None:
-        raise ApiResponse.error(message="Unable to store in mongodb",status_code=500,errors="MongoDB error")
+        raise ApiError(message="Unable to store in mongodb",status_code=500,errors="MongoDB error")
 
     return ApiResponse.success(data=str(file_object),status_code=200,message="Successfully stored and upload the file") 

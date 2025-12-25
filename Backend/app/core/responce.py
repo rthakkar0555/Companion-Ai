@@ -1,6 +1,6 @@
 from typing import Any, Optional
 from fastapi.responses import JSONResponse
-
+from typing import Any, Optional
 class ApiResponse:
 
     @staticmethod
@@ -32,3 +32,16 @@ class ApiResponse:
                 "errors": errors
             }
         )
+
+
+class ApiError(Exception):
+    def __init__(
+        self,
+        message: str = "Something went wrong",
+        status_code: int = 400,
+        errors: Optional[Any] = None
+    ):
+        self.message = message
+        self.status_code = status_code
+        self.errors = errors
+        super().__init__(message)

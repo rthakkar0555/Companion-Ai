@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Depends
 from bson import ObjectId
 from typing import List
-from app.core.responce import ApiResponse
+from app.core.responce import ApiResponse,ApiError
 from app.schema import userSchema
 from app.database import mongoDb
 from app.utils.hashing import Hash
@@ -24,7 +24,7 @@ async def create_user(request : userSchema.CreateUser):
     collection = mongoDb.get_user_collection()
 
     if collection is None:
-        return ApiResponse.error(message="User collection not found",status_code=500,errors="Internal server error")
+        return ApiError(message="User collection not found",status_code=500,errors="Internal server error")
 
     hashed_pass = Hash.bcrypt(request.password)
     email = request.email.strip().lower()
@@ -38,7 +38,7 @@ async def create_user(request : userSchema.CreateUser):
     user = collection.insert_one(user_data)
 
     if user is None:
-        return ApiResponse.error(message="User not created!",status_code=500,errors="Internal server error")
+        return ApiError(message="User not created!",status_code=500,errors="Internal server error")
     
     return ApiResponse.success(message="User created successfully",data=str(user.inserted_id),status_code=201)
 
@@ -50,19 +50,19 @@ async def login(request: OAuth2PasswordRequestForm = Depends()):
     collection = mongoDb.get_user_collection()
 
     if collection is None:
-        return ApiResponse.error(message="User collection not found",status_code=500,errors="Internal server error")
+        return ApiError(message="User collection not found",status_code=500,errors="Internal server error")
     
     email = request.username.strip().lower()
     user = collection.find_one({"email" : email})
     print("user :" ,user)
 
     if not user:
-        return ApiResponse.error(message="Email has been not registed",status_code=401,errors="Unvalide creadential")
+        return ApiError(message="Email has been not registed",status_code=401,errors="Unvalide creadential")
 
     check_psw = Hash.verify(plain_password=request.password,hashed_password= user["password"])
 
     if not check_psw:
-        return ApiResponse.error(message="Please enter valid password",status_code=401,errors="Not valid password")
+        return ApiError(message="Please enter valid password",status_code=401,errors="Not valid password")
     
 
     user["_id"] = str(user["_id"])
