@@ -20,7 +20,7 @@ async def get_current_user(token:str=Depends(oauth2_scheme)):
      user_decode=JWTtoken.verifyJWT(token=token)
      print(user_decode)
 
-     if not user_decode:
+     if user_decode is None:
           raise credentials_exception
      
      return user_decode
