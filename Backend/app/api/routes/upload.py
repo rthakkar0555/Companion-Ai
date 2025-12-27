@@ -13,15 +13,15 @@ router = APIRouter(tags=["Upload manual"])
 async def uploadfile(company_name: str = Form(...),
     product_name: str = Form(...),
     file: UploadFile = File(...),
-    curr_user:dict=Depends(get_current_user)):
+    curr_user:str=Depends(get_current_user)):
 
     collection = get_manual_collection()
-
+    print(curr_user)
     if collection is None:
         raise ApiError(message="Manual Collection not found",status_code=500,errors="Internal servererror")
     
     print(file.file)
-    result = upload(file.file , folder=f"manual/{company_name}",resource_type="auto")
+    result = upload(file.file , folder=f"manual/{company_name}",resource_type="raw")
 
     print(result)
 
@@ -43,8 +43,8 @@ async def uploadfile(company_name: str = Form(...),
         "uploaded_by": curr_user
     }
     responce=collection.insert_one(file_object)
-
+    file_object["_id"] = str(responce.inserted_id)
     if responce is None:
         raise ApiError(message="Unable to store in mongodb",status_code=500,errors="MongoDB error")
-
-    return ApiResponse.success(data=str(file_object),status_code=200,message="Successfully stored and upload the file") 
+    
+    return ApiResponse.success(data=file_object,status_code=200,message="Successfully stored and upload the file") 
