@@ -9,7 +9,7 @@ assert len(image_b64) < 180_000, \
   "To upload larger images, use the assets API (see docs)"
 
 headers = {
-  "Authorization": "Bearer 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",
+  "Authorization": "Bearer Api key",
   "Accept": "application/json"
 }
 
